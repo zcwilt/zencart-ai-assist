@@ -1,0 +1,24 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+ini_set('display_errors', 'stderr');
+
+ob_start();
+require_once dirname(__DIR__) . '/Console/bootstrap.php';
+
+$projectRoot = getenv('ZEN_AI_ASSIST_PROJECT_ROOT') ?: getenv('ZEN_BOOST_PROJECT_ROOT') ?: getcwd();
+if (!is_string($projectRoot) || !is_file(rtrim($projectRoot, '/\\') . '/includes/application_top.php')) {
+    $projectRoot = null;
+}
+
+$paths = new ZenAiAssistPathHelper(dirname(__DIR__), $projectRoot);
+$server = new ZenAiAssistMcpServer($paths);
+
+$startupOutput = ob_get_clean();
+if (is_string($startupOutput) && $startupOutput !== '') {
+    fwrite(STDERR, $startupOutput);
+}
+
+exit($server->run());

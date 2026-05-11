@@ -1,0 +1,639 @@
+{
+  "skills": [
+    {
+      "id": "plugin-scaffold",
+      "title": "Build Encapsulated Plugin",
+      "summary": "Create or expand an encapsulated Zen Cart plugin using the expected manifest, installer, filenames, and versioned directory layout.",
+      "intent": "Guide an agent through the baseline structure required for a healthy encapsulated plugin.",
+      "tags": ["plugin", "scaffold", "manifest", "installer"],
+      "when_to_use": [
+        "A new Zen Cart feature should live in a plugin instead of core files.",
+        "An existing plugin is missing baseline encapsulated structure."
+      ],
+      "required_context": [
+        "Plugin unique key",
+        "Plugin version directory",
+        "Whether the work is catalog-side, admin-side, or both"
+      ],
+      "source_refs": [
+        "docs: https://docs.zen-cart.com/dev/plugins/",
+        "docs: https://docs.zen-cart.com/dev/plugins/encapsulated_plugins/",
+        "code: zc_plugins/*/*/manifest.php"
+      ],
+      "workflow_steps": [
+        "Start with manifest.php, filenames.php, and Installer/ScriptedInstaller.php.",
+        "Create catalog and admin directories only where the feature actually needs them.",
+        "Keep runtime wiring inside the versioned plugin tree instead of editing bootstrap files directly.",
+        "Install or enable the plugin through Plugin Manager before debugging runtime behavior."
+      ],
+      "validation_steps": [
+        "Confirm manifest.php exists.",
+        "Confirm Installer/ScriptedInstaller.php exists.",
+        "Confirm filenames.php exists for new entrypoints."
+      ],
+      "anti_patterns": [
+        "Do not add new feature files directly to core bootstrap paths when a plugin hook exists.",
+        "Do not assume Composer autoloading is available in production runtime code."
+      ],
+      "expected_outputs": [
+        "manifest.php",
+        "filenames.php",
+        "Installer/ScriptedInstaller.php",
+        "versioned plugin directory structure"
+      ],
+      "validation_rules": [
+        {
+          "type": "path_exists",
+          "root": "plugin",
+          "path": "manifest.php",
+          "description": "Plugin manifest exists."
+        },
+        {
+          "type": "path_exists",
+          "root": "plugin",
+          "path": "filenames.php",
+          "description": "Plugin filenames definitions exist."
+        },
+        {
+          "type": "path_exists",
+          "root": "plugin",
+          "path": "Installer/ScriptedInstaller.php",
+          "description": "Plugin scripted installer exists."
+        }
+      ],
+      "content_file": "plugin-scaffold.md"
+    },
+    {
+      "id": "admin-page",
+      "title": "Create Admin Plugin Page",
+      "summary": "Add a Zen Cart admin page inside an encapsulated plugin with the expected language and menu-definition files.",
+      "intent": "Keep admin features encapsulated and correctly wired for admin menu and language loading.",
+      "tags": ["admin", "page", "plugin", "language"],
+      "when_to_use": [
+        "A task requires a new admin page.",
+        "An existing encapsulated plugin admin page is missing language or menu wiring."
+      ],
+      "required_context": [
+        "Expected admin page filename",
+        "Plugin root",
+        "Whether the page should appear in the admin menu"
+      ],
+      "source_refs": [
+        "docs: https://docs.zen-cart.com/dev/plugins/encapsulated_plugins/",
+        "code: zc_plugins/*/*/admin/"
+      ],
+      "workflow_steps": [
+        "Create the admin entrypoint under admin/ inside the plugin.",
+        "Add the matching admin language file under admin/includes/languages/english/.",
+        "Add the extra_definitions menu file when the page should appear in admin navigation.",
+        "Register the admin page from the installer instead of editing core admin menus."
+      ],
+      "validation_steps": [
+        "Confirm the plugin contains at least one admin entrypoint.",
+        "Confirm the matching admin language file exists.",
+        "Confirm the menu-definition file exists when the page should appear in navigation."
+      ],
+      "anti_patterns": [
+        "Do not place new admin functionality directly in core admin files.",
+        "Do not skip extra_definitions menu wiring for navigable admin pages."
+      ],
+      "expected_outputs": [
+        "admin/*.php entrypoint",
+        "admin/includes/languages/english/lang.<page>.php",
+        "admin/includes/languages/english/extra_definitions/lang.<page>_menu.php"
+      ],
+      "validation_rules": [
+        {
+          "type": "glob_exists",
+          "root": "plugin",
+          "pattern": "admin/*.php",
+          "description": "Plugin exposes at least one admin entrypoint."
+        },
+        {
+          "type": "glob_exists",
+          "root": "plugin",
+          "pattern": "admin/includes/languages/english/lang.*.php",
+          "description": "Plugin exposes at least one admin language file."
+        },
+        {
+          "type": "glob_exists",
+          "root": "plugin",
+          "pattern": "admin/includes/languages/english/extra_definitions/*.php",
+          "description": "Plugin exposes at least one admin menu-definition file."
+        }
+      ],
+      "content_file": "admin-page.md"
+    },
+    {
+      "id": "create-storefront-page",
+      "title": "Create Storefront Page",
+      "summary": "Add a storefront page inside an encapsulated plugin with the expected header module, language file, and template wiring.",
+      "intent": "Guide an agent through the normal Zen Cart encapsulated-plugin page-module flow instead of inventing ad hoc routing patterns.",
+      "tags": ["storefront", "page", "template", "language"],
+      "when_to_use": [
+        "A feature needs a new storefront page.",
+        "A page exists but its page-module files are incomplete."
+      ],
+      "required_context": [
+        "Target page slug",
+        "Plugin root or project root",
+        "Whether the page lives in an encapsulated plugin or the main app"
+      ],
+      "source_refs": [
+        "docs: https://docs.zen-cart.com/dev/",
+        "code: includes/modules/pages/",
+        "code: includes/templates/template_default/"
+      ],
+      "workflow_steps": [
+        "Add or confirm the FILENAME_* constant before linking to the page.",
+        "Create header_php.php under the page module directory.",
+        "Add the matching language file and template file.",
+        "Keep user output protected with zen_output_string_protected() when rendering user data."
+      ],
+      "validation_steps": [
+        "Confirm a header_php.php file exists for the page.",
+        "Confirm a matching storefront language file exists.",
+        "Confirm a matching template file exists."
+      ],
+      "anti_patterns": [
+        "Do not add ad hoc routing instead of using normal page-module conventions.",
+        "Do not output user-provided data without Zen Cart output protection."
+      ],
+      "expected_outputs": [
+        "catalog/includes/modules/pages/<page>/header_php.php",
+        "catalog/includes/languages/english/lang.<page>.php",
+        "catalog/includes/templates/template_default/tpl_<page>.php"
+      ],
+      "validation_rules": [
+        {
+          "type": "glob_exists",
+          "root": "plugin",
+          "pattern": "catalog/includes/modules/pages/*/header_php.php",
+          "description": "Plugin exposes at least one storefront page header module."
+        },
+        {
+          "type": "glob_exists",
+          "root": "plugin",
+          "pattern": "catalog/includes/languages/english/lang.*.php",
+          "description": "Plugin exposes at least one storefront language file."
+        },
+        {
+          "type": "glob_exists",
+          "root": "plugin",
+          "pattern": "catalog/includes/templates/template_default/tpl_*.php",
+          "description": "Plugin exposes at least one storefront template file."
+        }
+      ],
+      "content_file": "create-storefront-page.md"
+    },
+    {
+      "id": "build-scripted-installer",
+      "title": "Build Scripted Installer",
+      "summary": "Add or improve an encapsulated plugin ScriptedInstaller so install, upgrade, and uninstall behavior stays explicit and idempotent.",
+      "intent": "Keep schema and lifecycle changes inside the supported installer surface.",
+      "tags": ["installer", "plugin", "lifecycle", "schema"],
+      "when_to_use": [
+        "A plugin needs schema or lifecycle work.",
+        "An installer is missing or does not clearly express install and uninstall behavior."
+      ],
+      "required_context": [
+        "Plugin root",
+        "Whether the plugin has schema changes",
+        "Whether an unencapsulated predecessor must be cleaned up"
+      ],
+      "source_refs": [
+        "docs: https://docs.zen-cart.com/dev/plugins/encapsulated_plugins/",
+        "code: zc_plugins/PayPalRestful/v2.0.0/Installer/ScriptedInstaller.php"
+      ],
+      "workflow_steps": [
+        "Create or update Installer/ScriptedInstaller.php inside the plugin version.",
+        "Keep install and uninstall behavior idempotent.",
+        "Use installer code for schema changes and lifecycle cleanup, not module remove() methods."
+      ],
+      "validation_steps": [
+        "Confirm Installer/ScriptedInstaller.php exists.",
+        "Confirm installer language files exist when the installer declares strings."
+      ],
+      "anti_patterns": [
+        "Do not hide schema changes in unrelated runtime code.",
+        "Do not rely on manual DB edits for normal plugin install workflows."
+      ],
+      "expected_outputs": [
+        "Installer/ScriptedInstaller.php",
+        "Installer/languages/english/main.php"
+      ],
+      "validation_rules": [
+        {
+          "type": "path_exists",
+          "root": "plugin",
+          "path": "Installer/ScriptedInstaller.php",
+          "description": "Scripted installer exists."
+        },
+        {
+          "type": "path_exists",
+          "root": "plugin",
+          "path": "Installer/languages/english/main.php",
+          "description": "Installer language file exists."
+        }
+      ],
+      "content_file": "build-scripted-installer.md"
+    },
+    {
+      "id": "wire-language-files",
+      "title": "Wire Language Files",
+      "summary": "Add the expected Zen Cart language files for encapsulated plugin storefront pages, admin pages, and installer strings.",
+      "intent": "Reduce broken page wiring caused by missing or misplaced language definitions.",
+      "tags": ["language", "i18n", "page", "admin"],
+      "when_to_use": [
+        "A new page or admin page is being added.",
+        "Labels or definitions are missing because the wrong language path was used."
+      ],
+      "required_context": [
+        "Page slug or admin page filename",
+        "Encapsulated plugin root",
+        "Whether the work is storefront, admin, or installer-related"
+      ],
+      "source_refs": [
+        "code: catalog/includes/languages/english/",
+        "code: admin/includes/languages/english/",
+        "code: Installer/languages/english/"
+      ],
+      "workflow_steps": [
+        "Place storefront language definitions under catalog/includes/languages/english/.",
+        "Place admin page definitions under admin/includes/languages/english/.",
+        "Place admin menu definitions under admin/includes/languages/english/extra_definitions/.",
+        "Place installer strings under Installer/languages/english/ when needed."
+      ],
+      "validation_steps": [
+        "Confirm the plugin contains at least one language file relevant to the changed area."
+      ],
+      "anti_patterns": [
+        "Do not place admin strings in storefront language paths.",
+        "Do not rely on inline literals when a reusable language definition should exist."
+      ],
+      "expected_outputs": [
+        "storefront/admin/installer language files in the expected directories"
+      ],
+      "validation_rules": [
+        {
+          "type": "glob_exists",
+          "root": "plugin",
+          "pattern": "{catalog,admin}/includes/languages/english/*.php",
+          "description": "At least one primary storefront or admin language file exists."
+        }
+      ],
+      "content_file": "wire-language-files.md"
+    },
+    {
+      "id": "add-observer-hook",
+      "title": "Add Observer Hook",
+      "summary": "Add observer-based integration when an encapsulated plugin needs to hook into Zen Cart events or output flow.",
+      "intent": "Prefer explicit observer wiring over fragile direct core edits.",
+      "tags": ["observer", "events", "bootstrap", "plugin"],
+      "when_to_use": [
+        "An encapsulated plugin needs to inject CSS, JS, or behavior into existing pages.",
+        "A change depends on Zen Cart notifier or observer patterns."
+      ],
+      "required_context": [
+        "Encapsulated plugin root",
+        "Target event or hook",
+        "Whether the behavior is catalog-side or admin-side"
+      ],
+      "source_refs": [
+        "code: includes/classes/observers/",
+        "code: zc_plugins/*/*/catalog/includes/classes/observers/"
+      ],
+      "workflow_steps": [
+        "Create the observer class under the plugin observer directory.",
+        "Use the auto_ naming convention where the auto-loader expects it.",
+        "Prefer observer hooks and plugin helpers over direct edits to bootstrap files."
+      ],
+      "validation_steps": [
+        "Confirm at least one observer file exists under the plugin observer path."
+      ],
+      "anti_patterns": [
+        "Do not edit core bootstrap files when an observer hook or plugin loader can handle the integration.",
+        "Do not bury integration logic in unrelated templates when an observer is the right contract."
+      ],
+      "expected_outputs": [
+        "catalog or admin observer classes"
+      ],
+      "validation_rules": [
+        {
+          "type": "glob_exists",
+          "root": "plugin",
+          "pattern": "{catalog,admin}/includes/classes/observers/*.php",
+          "description": "At least one observer file exists."
+        }
+      ],
+      "content_file": "add-observer-hook.md"
+    },
+    {
+      "id": "plugin-doctor",
+      "title": "Diagnose Plugin Not Loading",
+      "summary": "Inspect encapsulated plugin structure, installer, filenames, runtime state, and page wiring when a plugin is not loading or behaves unexpectedly.",
+      "intent": "Give agents a repeatable encapsulated-plugin debugging path before they start making random bootstrap changes.",
+      "tags": ["doctor", "plugin", "runtime", "debugging"],
+      "when_to_use": [
+        "An encapsulated plugin is not loading.",
+        "An encapsulated plugin is installed but behaves differently than expected."
+      ],
+      "required_context": [
+        "Encapsulated plugin root",
+        "Plugin manager state when available",
+        "Any recent runtime errors or logs"
+      ],
+      "source_refs": [
+        "code: catalog/includes/classes/ZenAiAssistDoctorService.php",
+        "code: catalog/includes/classes/ZenAiAssistRuntimeInspector.php"
+      ],
+      "workflow_steps": [
+        "Inspect manifest.php and the Installer directory first.",
+        "Check filenames.php coverage for intended entrypoints.",
+        "Verify catalog and admin page wiring, including language and template files.",
+        "Check Plugin Manager state before assuming bootstrap discovery is broken."
+      ],
+      "validation_steps": [
+        "Confirm manifest.php exists.",
+        "Confirm Installer/ScriptedInstaller.php exists.",
+        "Confirm the plugin exposes at least one task-specific skill."
+      ],
+      "anti_patterns": [
+        "Do not assume missing runtime behavior always means bootstrap failure.",
+        "Do not skip plugin-manager state checks when runtime inspection is available."
+      ],
+      "expected_outputs": [
+        "diagnostic findings",
+        "clear next-step recommendations"
+      ],
+      "validation_rules": [
+        {
+          "type": "path_exists",
+          "root": "plugin",
+          "path": "manifest.php",
+          "description": "Plugin manifest exists."
+        },
+        {
+          "type": "path_exists",
+          "root": "plugin",
+          "path": "Installer/ScriptedInstaller.php",
+          "description": "Plugin installer exists."
+        },
+        {
+          "type": "glob_exists",
+          "root": "plugin",
+          "pattern": "resources/skills/*.md",
+          "description": "Plugin exposes at least one skill document."
+        }
+      ],
+      "content_file": "plugin-doctor.md"
+    },
+    {
+      "id": "docs-compare",
+      "title": "Compare Docs To Runtime",
+      "summary": "Answer a Zen Cart question using both official docs guidance and current repo behavior, then surface mismatches explicitly.",
+      "intent": "Keep answers grounded in both intended conventions and actual runtime code.",
+      "tags": ["docs", "comparison", "runtime", "search"],
+      "when_to_use": [
+        "A task asks how Zen Cart should do something.",
+        "Docs and code may not agree."
+      ],
+      "required_context": [
+        "Question or task text",
+        "Local docs index",
+        "Local repo index"
+      ],
+      "source_refs": [
+        "docs: https://docs.zen-cart.com/dev/",
+        "code: cache/zen-ai-assist/catalogs/docs-index.json",
+        "code: cache/zen-ai-assist/catalogs/repo-index.json"
+      ],
+      "workflow_steps": [
+        "Search docs first for intended guidance.",
+        "Search repo evidence second for runtime truth.",
+        "Call out mismatches explicitly instead of silently picking one.",
+        "Return source paths and doc URLs with the result."
+      ],
+      "validation_steps": [
+        "Confirm docs and repo catalogs exist before relying on comparison output."
+      ],
+      "anti_patterns": [
+        "Do not answer purely from generic PHP instincts when Zen Cart conventions differ.",
+        "Do not hide a docs-vs-code mismatch."
+      ],
+      "expected_outputs": [
+        "documented approach",
+        "current repo behavior",
+        "mismatch note"
+      ],
+      "validation_rules": [
+        {
+          "type": "path_exists",
+          "root": "project",
+          "path": "cache/zen-ai-assist/catalogs/docs-index.json",
+          "description": "Docs catalog exists."
+        },
+        {
+          "type": "path_exists",
+          "root": "project",
+          "path": "cache/zen-ai-assist/catalogs/repo-index.json",
+          "description": "Repo catalog exists."
+        }
+      ],
+      "content_file": "docs-compare.md"
+    },
+    {
+      "id": "create-core-unit-test",
+      "title": "Create Core Unit Test",
+      "summary": "Add or update a core Zen Cart unit test under the central test framework.",
+      "intent": "Guide test work for isolated core logic without drifting into full feature-test setup.",
+      "tags": ["tests", "core", "unit"],
+      "when_to_use": [
+        "A change affects isolated core logic.",
+        "A bug fix needs focused regression coverage without full storefront or admin setup."
+      ],
+      "required_context": [
+        "Target core class or function",
+        "Whether the behavior is isolated enough for unit scope"
+      ],
+      "source_refs": [
+        "code: not_for_release/testFramework/Unit/",
+        "code: not_for_release/testFramework/Support/zcUnitTestCase.php",
+        "code: composer.json"
+      ],
+      "workflow_steps": [
+        "Place the test under not_for_release/testFramework/Unit/.",
+        "Extend Tests\\Support\\zcUnitTestCase.",
+        "Keep the assertions focused on isolated behavior and deterministic fixtures.",
+        "Run composer tests-unit or the smallest relevant PHPUnit filter."
+      ],
+      "validation_steps": [
+        "Confirm the test file lives under not_for_release/testFramework/Unit/.",
+        "Confirm it extends zcUnitTestCase."
+      ],
+      "anti_patterns": [
+        "Do not put full storefront or admin request flows into a unit test.",
+        "Do not add unnecessary DB/bootstrap dependencies when isolated logic can be tested directly."
+      ],
+      "expected_outputs": [
+        "core unit test file",
+        "focused regression coverage"
+      ],
+      "validation_rules": [
+        {
+          "type": "glob_exists",
+          "root": "project",
+          "pattern": "not_for_release/testFramework/Unit/*Test.php",
+          "description": "Core unit test files exist in the central test suite."
+        }
+      ],
+      "content_file": "create-core-unit-test.md"
+    },
+    {
+      "id": "create-core-feature-test",
+      "title": "Create Core Feature Test",
+      "summary": "Add or update a core storefront or admin in-process feature test in the central Zen Cart test framework.",
+      "intent": "Guide behavior-focused coverage for core storefront and admin flows.",
+      "tags": ["tests", "core", "feature", "storefront", "admin"],
+      "when_to_use": [
+        "A change affects storefront or admin behavior.",
+        "A regression needs in-process feature coverage instead of a unit-only assertion."
+      ],
+      "required_context": [
+        "Whether the behavior is storefront or admin",
+        "Whether the test can run in parallel or must be serial"
+      ],
+      "source_refs": [
+        "code: not_for_release/testFramework/FeatureStore/",
+        "code: not_for_release/testFramework/FeatureAdmin/",
+        "code: not_for_release/testFramework/report-feature-test-groups.sh",
+        "code: composer.json"
+      ],
+      "workflow_steps": [
+        "Place storefront tests under not_for_release/testFramework/FeatureStore/ or admin tests under not_for_release/testFramework/FeatureAdmin/.",
+        "Extend the appropriate in-process feature base class.",
+        "Choose explicit grouping tags such as parallel-candidate, serial, or plugin-filesystem.",
+        "Run the smallest relevant feature command or filter."
+      ],
+      "validation_steps": [
+        "Confirm the test file is in the correct FeatureStore or FeatureAdmin directory.",
+        "Confirm explicit grouping tags are present when the framework expects them."
+      ],
+      "anti_patterns": [
+        "Do not add feature tests without clear grouping tags when the runner expects them.",
+        "Do not use a unit-test base class for behavior that depends on storefront or admin runtime flow."
+      ],
+      "expected_outputs": [
+        "core feature test file",
+        "storefront or admin regression coverage"
+      ],
+      "validation_rules": [
+        {
+          "type": "glob_exists",
+          "root": "project",
+          "pattern": "not_for_release/testFramework/FeatureStore/*Test.php",
+          "description": "Core storefront feature tests exist in the central test suite."
+        },
+        {
+          "type": "glob_exists",
+          "root": "project",
+          "pattern": "not_for_release/testFramework/FeatureAdmin/*Test.php",
+          "description": "Core admin feature tests exist in the central test suite."
+        }
+      ],
+      "content_file": "create-core-feature-test.md"
+    },
+    {
+      "id": "create-plugin-test",
+      "title": "Create Encapsulated Plugin Test",
+      "summary": "Add or update plugin-local tests for an encapsulated plugin under its versioned tests directory.",
+      "intent": "Guide plugin-local test creation without confusing it with central core test placement.",
+      "tags": ["tests", "plugin", "feature", "unit"],
+      "when_to_use": [
+        "A change affects an encapsulated plugin and coverage should live with the plugin.",
+        "A plugin install, admin flow, storefront flow, or plugin-local unit behavior needs regression coverage."
+      ],
+      "required_context": [
+        "Encapsulated plugin root",
+        "Whether the test is unit, FeatureStore, or FeatureAdmin",
+        "Whether the test mutates plugin installation or filesystem state"
+      ],
+      "source_refs": [
+        "docs: not_for_release/testFramework/docs/plugin-local-testing-plan.md",
+        "code: zc_plugins/*/*/tests/",
+        "code: not_for_release/testFramework/Support/Traits/PluginLocalTestConcerns.php",
+        "code: composer.json"
+      ],
+      "workflow_steps": [
+        "Place the test under tests/Unit/, tests/FeatureStore/, or tests/FeatureAdmin/ inside the encapsulated plugin version directory.",
+        "Use tests/bootstrap.php and tests/plugin-test.php only when plugin-local bootstrap or metadata is needed.",
+        "Use PluginLocalTestConcerns when plugin install/bootstrap helpers are required.",
+        "Tag filesystem-mutating tests with serial and plugin-filesystem.",
+        "Run composer tests-plugin -- --plugin <plugin-name> with the smallest useful suite or filter."
+      ],
+      "validation_steps": [
+        "Confirm the test lives under the encapsulated plugin version directory.",
+        "Confirm filesystem-mutating tests use the required grouping tags."
+      ],
+      "anti_patterns": [
+        "Do not put encapsulated plugin tests into the central core test directories.",
+        "Do not use plugin-filesystem tags for read-only tests that can stay parallel."
+      ],
+      "expected_outputs": [
+        "plugin-local test file",
+        "encapsulated plugin regression coverage"
+      ],
+      "validation_rules": [
+        {
+          "type": "glob_exists",
+          "root": "plugin",
+          "pattern": "tests/*/*Test.php",
+          "description": "Plugin-local tests exist under the encapsulated plugin tests directory."
+        }
+      ],
+      "content_file": "create-plugin-test.md"
+    },
+    {
+      "id": "debug-test-failure",
+      "title": "Debug Test Failure",
+      "summary": "Debug a failing Zen Cart core or plugin-local test by narrowing the failure mode before changing production code.",
+      "intent": "Separate real behavior regressions from bootstrap, DB, grouping, or isolation failures.",
+      "tags": ["tests", "debugging", "core", "plugin"],
+      "when_to_use": [
+        "A unit, storefront, admin, or plugin-local test is failing.",
+        "The next step should be failure classification rather than immediate production edits."
+      ],
+      "required_context": [
+        "Failing test name or path",
+        "Whether the failure is core or plugin-local",
+        "Whether the failure is unit, storefront, or admin"
+      ],
+      "source_refs": [
+        "code: composer.json",
+        "code: not_for_release/testFramework/",
+        "docs: not_for_release/testFramework/docs/plugin-local-testing-plan.md"
+      ],
+      "workflow_steps": [
+        "Classify the failure as unit, storefront feature, admin feature, or plugin-local.",
+        "Rerun the smallest relevant command with a narrow filter.",
+        "Check whether the issue is code behavior, runtime bootstrap, DB setup, grouping, or isolation.",
+        "Inspect recent test logs and artifacts when the failure depends on in-process runtime behavior."
+      ],
+      "validation_steps": [
+        "Confirm the failure is reproducible with the smallest relevant command.",
+        "Confirm the suspected cause is classified before changing production code."
+      ],
+      "anti_patterns": [
+        "Do not patch production code before isolating whether the failure is actually a test-runtime issue.",
+        "Do not rerun the broadest suite first when a narrow filter can prove the failure mode faster."
+      ],
+      "expected_outputs": [
+        "repro steps",
+        "failure classification",
+        "next debugging action"
+      ],
+      "validation_rules": [],
+      "content_file": "debug-test-failure.md"
+    }
+  ]
+}
