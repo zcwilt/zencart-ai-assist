@@ -17,7 +17,8 @@
       ],
       "source_refs": [
         "docs: https://docs.zen-cart.com/dev/plugins/",
-        "docs: https://docs.zen-cart.com/dev/plugins/encapsulated_plugins/",
+        "docs: https://docs.zen-cart.com/dev/plugins/encapsulated/",
+        "docs: https://docs.zen-cart.com/dev/plugins/encapsulated/manifests/",
         "code: zc_plugins/*/*/manifest.php",
         "code: zc_plugins/.gitignore"
       ],
@@ -83,7 +84,7 @@
         "Whether the page should appear in the admin menu"
       ],
       "source_refs": [
-        "docs: https://docs.zen-cart.com/dev/plugins/encapsulated_plugins/",
+        "docs: https://docs.zen-cart.com/dev/plugins/encapsulated/",
         "docs: https://docs.zen-cart.com/dev/code/admin_sanitization/",
         "code: zc_plugins/*/*/admin/"
       ],
@@ -211,7 +212,8 @@
         "Whether an unencapsulated predecessor must be cleaned up"
       ],
       "source_refs": [
-        "docs: https://docs.zen-cart.com/dev/plugins/encapsulated_plugins/",
+        "docs: https://docs.zen-cart.com/dev/plugins/encapsulated/",
+        "docs: https://docs.zen-cart.com/dev/plugins/encapsulated/manifests/",
         "code: zc_plugins/PayPalRestful/v2.0.0/Installer/ScriptedInstaller.php"
       ],
       "workflow_steps": [
@@ -355,7 +357,7 @@
       "source_refs": [
         "code: catalog/includes/classes/ZenAiAssistDoctorService.php",
         "code: catalog/includes/classes/ZenAiAssistRuntimeInspector.php",
-        "docs: https://docs.zen-cart.com/dev/plugins/encapsulated_plugins/"
+        "docs: https://docs.zen-cart.com/dev/plugins/encapsulated/"
       ],
       "workflow_steps": [
         "Inspect manifest.php and the Installer directory first.",

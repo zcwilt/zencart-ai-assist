@@ -30,6 +30,7 @@ class ZenAiAssistAnswerService
             'confidence' => (string)($comparison['confidence'] ?? 'none'),
             'docs' => $comparison['docs'] ?? [],
             'repo' => $comparison['repo'] ?? [],
+            'references' => $this->buildReferences($comparison['docs'] ?? [], $comparison['repo'] ?? []),
         ];
     }
 
@@ -53,14 +54,15 @@ class ZenAiAssistAnswerService
 
         $pluginContext = $this->buildPluginContext($loadedSkill, $pluginRoot);
 
-        return $answer + [
+        return array_merge($answer, [
             'recommended_skill' => $recommendedSkill,
             'recommended_skill_detail' => $loadedSkill,
             'skill_matches' => $skillMatches['matches'] ?? [],
             'workflow_hint' => $this->buildWorkflowHint($loadedSkill),
             'plugin_context' => $pluginContext,
+            'references' => $this->buildReferences($answer['docs'] ?? [], $answer['repo'] ?? [], $loadedSkill),
             'recommended_next_steps' => $this->buildRecommendedNextSteps($loadedSkill, $pluginContext, $answer),
-        ];
+        ]);
     }
 
     private function summarizeDocs(array $records): string
@@ -200,6 +202,128 @@ class ZenAiAssistAnswerService
         }
 
         return array_values(array_unique($steps));
+    }
+
+    private function buildReferences(array $docs, array $repo, ?array $skill = null): array
+    {
+        $references = [
+            'docs' => [],
+            'code' => [],
+        ];
+
+        foreach ($docs as $record) {
+            if (!is_array($record)) {
+                continue;
+            }
+
+            $url = trim((string)($record['url'] ?? ''));
+            if ($url === '') {
+                continue;
+            }
+
+            $references['docs'][] = [
+                'label' => trim((string)($record['title'] ?? 'Official docs')),
+                'url' => $url,
+                'source' => 'docs_index',
+            ];
+        }
+
+        foreach ($repo as $record) {
+            if (!is_array($record)) {
+                continue;
+            }
+
+            $path = trim((string)($record['path'] ?? ''));
+            if ($path === '') {
+                continue;
+            }
+
+            $references['code'][] = [
+                'label' => trim((string)($record['title'] ?? basename($path))),
+                'path' => $path,
+                'source' => 'repo_index',
+            ];
+        }
+
+        foreach ($this->extractSkillSourceReferences($skill) as $reference) {
+            $bucket = $reference['type'] ?? '';
+            if ($bucket !== 'docs' && $bucket !== 'code') {
+                continue;
+            }
+
+            unset($reference['type']);
+            $references[$bucket][] = $reference;
+        }
+
+        foreach (['docs', 'code'] as $bucket) {
+            $references[$bucket] = $this->deduplicateReferences($references[$bucket], $bucket === 'docs' ? 'url' : 'path');
+        }
+
+        return $references;
+    }
+
+    private function extractSkillSourceReferences(?array $skill): array
+    {
+        if (!is_array($skill) || !($skill['found'] ?? false)) {
+            return [];
+        }
+
+        $references = [];
+        $sourceRefs = is_array($skill['source_refs'] ?? null) ? $skill['source_refs'] : [];
+
+        foreach ($sourceRefs as $sourceRef) {
+            $sourceRef = trim((string)$sourceRef);
+            if ($sourceRef === '' || !str_contains($sourceRef, ':')) {
+                continue;
+            }
+
+            [$type, $value] = explode(':', $sourceRef, 2);
+            $type = strtolower(trim($type));
+            $value = trim($value);
+
+            if ($type === 'docs' && $value !== '') {
+                $references[] = [
+                    'type' => 'docs',
+                    'label' => 'Skill reference',
+                    'url' => $value,
+                    'source' => 'skill_source_ref',
+                ];
+                continue;
+            }
+
+            if ($type === 'code' && $value !== '') {
+                $references[] = [
+                    'type' => 'code',
+                    'label' => 'Skill code reference',
+                    'path' => $value,
+                    'source' => 'skill_source_ref',
+                ];
+            }
+        }
+
+        return $references;
+    }
+
+    private function deduplicateReferences(array $references, string $identityKey): array
+    {
+        $deduplicated = [];
+        $seen = [];
+
+        foreach ($references as $reference) {
+            if (!is_array($reference)) {
+                continue;
+            }
+
+            $identity = trim((string)($reference[$identityKey] ?? ''));
+            if ($identity === '' || isset($seen[$identity])) {
+                continue;
+            }
+
+            $seen[$identity] = true;
+            $deduplicated[] = $reference;
+        }
+
+        return $deduplicated;
     }
 
     private function buildPluginContext(?array $skill, ?string $pluginRoot): array

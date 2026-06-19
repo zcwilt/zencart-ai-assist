@@ -114,6 +114,7 @@ Use this when you want:
 - a documented approach
 - current repo behavior
 - a mismatch note when docs and code differ
+- explicit doc and code references in the response payload
 
 ### Compare Docs to Current Code
 
@@ -201,6 +202,12 @@ For client-specific setup, see [mcp-clients.md](./mcp-clients.md).
 ## Skills
 
 Zen AI Assist ships structured workflow skills under `resources/skills/`.
+
+When a skill-based answer is returned through MCP, the response also includes a structured `references` section. That section can include:
+
+- official docs URLs from the cached docs match
+- skill-linked docs such as the encapsulated plugin manifest docs
+- relevant code paths from the local repo catalog
 
 These are intended to guide common Zen Cart tasks such as:
 

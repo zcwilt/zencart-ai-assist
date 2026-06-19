@@ -42,6 +42,7 @@ bin/zencart ai:mcp:serve
 
 - `docs:search` for quick keyword lookup
 - `docs:ask` when you want a docs-based answer with repo context
+- `ask_with_skill_context` through MCP when you want the answer plus explicit doc/code references
 - `plugin:doctor` when a plugin looks incomplete or miswired
 - `mcp:serve` when you want to connect Zen AI Assist to an editor or coding agent
 
